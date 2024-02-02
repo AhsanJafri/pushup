@@ -1,5 +1,4 @@
 import {createSlice} from '@reduxjs/toolkit';
-
 const initialState = {
   user: null,
   isAuthenticated: false,
@@ -16,6 +15,16 @@ const authenticationSlice = createSlice({
   reducers: {
     emptyError: state => {
       state.error = null;
+    },
+    saveToken: (state, action) => {
+      if (action.payload) {
+        console.log(action);
+        state.token = action.payload;
+      }
+    },
+    clearToken: (state, action) => {
+      console.log('clearToken');
+      state.token = null;
     },
     updateUserFirstLogin: state => {
       if (state.user) {
@@ -49,6 +58,8 @@ export const {
   endTour,
   updateUserFirstLogin,
   updateTourFirstTime,
+  saveToken,
+  clearToken,
 } = authenticationSlice.actions;
 
 export const usersSelector = state => state.authentication.user;

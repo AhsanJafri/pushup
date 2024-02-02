@@ -1,3 +1,3 @@
-import { rtkQueryErrorLogger, successMessageLogger } from './rtkQueryErrorLogger';
+import {rtkQueryErrorLogger, successMessageLogger} from './rtkQueryErrorLogger';
 
-export { rtkQueryErrorLogger, successMessageLogger };
+export {rtkQueryErrorLogger, successMessageLogger};

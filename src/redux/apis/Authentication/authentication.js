@@ -4,9 +4,10 @@ export const login = api.injectEndpoints({
   endpoints: builder => ({
     loginForm: builder.mutation({
       query: body => ({
-        url: '/user/login',
+        url: '/token',
         method: 'POST',
         body,
+        responseHandler: response => response.text(),
       }),
     }),
     loginGoogle: builder.mutation({
