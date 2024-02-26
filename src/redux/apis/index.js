@@ -1,4 +1,7 @@
 export * from './Authentication/authentication';
+export * from './Users/users';
+export * from './Follow/follow';
+export * from './Notifications/notifications';
 
 function getFirstErrorMessage(jsonData) {
   const datum = Object.values(jsonData.error.data.errors).flatMap(

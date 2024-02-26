@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react';
+import React, {useRef, useState} from 'react';
 import {
   StyleSheet,
   View,
@@ -10,13 +10,11 @@ import {
   Image,
   Text,
 } from 'react-native';
-import {useTheme, Input, Button} from '@rneui/themed';
-import {CommonActions} from '@react-navigation/native';
-import {GoogleSignin} from '@react-native-google-signin/google-signin';
+import {Input, Button} from '@rneui/themed';
 import auth from '@react-native-firebase/auth';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Snackbar from 'react-native-snackbar';
-import {useDispatch, useSelector} from 'react-redux';
+
 import {Formik} from 'formik';
 import * as Yup from 'yup';
 import route from '../../navigation/routes';
@@ -25,36 +23,20 @@ import fonts from '../../styles/fonts';
 import {FontSize} from '../../utils/FontSize';
 import Space from '../../Component/Space';
 import UtilityMethods from '../../utils/UtilityMethods';
-import {
-  userLogin,
-  usersSelector,
-} from '../../redux/features/Authentication/authentication';
-import {
-  useCreateUserGoogleMutation,
-  useGetCurrentUserMutation,
-} from '../../redux/apis';
 import Screen from '../../Component/Screen';
 import {img} from '../../assets/img';
+import {useCreateUserMutation} from '../../redux/apis';
 import Loader from '../../Component/Loader';
 
-const Login = ({navigation}) => {
+const Signup = ({navigation}) => {
   const formikRef = useRef();
-  const emailInputRef = useRef();
   const passwordInputRef = useRef();
-
-  const dispatch = useDispatch();
-
-  const user = useSelector(state => state.authentication);
-
-  const [email, setEmail] = useState('');
   const [loader, setLoader] = useState(false);
-  const [createUserGoogle, {isLoading: isLoadingCreateUser}] =
-    useCreateUserGoogleMutation();
-
-  const [getCurrentUserWithEmail, {isLoading: isLoadingGetCurrentUser}] =
-    useGetCurrentUserMutation();
+  const [createUser, {isLoading: isLoadingCreateUser}] =
+    useCreateUserMutation();
 
   const validation = Yup.object().shape({
+    user: Yup.string().required('Email is required'),
     email: Yup.string()
       .email('Invalid email address')
       .required('Email is required'),
@@ -64,31 +46,28 @@ const Login = ({navigation}) => {
   const handleLogin = async values => {
     setLoader(true);
     auth()
-      .signInWithEmailAndPassword(values.email, values.password)
-      .then(user => {
+      .createUserWithEmailAndPassword(values.email, values.password)
+      .then(async user => {
+        user.user.updateProfile({
+          displayName: values.user,
+        });
         setLoader(false);
         if (user) {
-          getCurrentUserWithEmail({email: values.email}).then(user =>
-            dispatch(userLogin(user.data.user)),
-          );
-          Snackbar.show({
-            text: 'User Successfully Login',
-            duration: Snackbar.LENGTH_SHORT,
-            backgroundColor: colors.green,
+          await createUser(values).then(e => {
+            navigation.navigate(route.LOGIN_SCREEN);
+            Snackbar.show({
+              text: 'User Successfully Created',
+              duration: Snackbar.LENGTH_SHORT,
+              backgroundColor: colors.green,
+            });
           });
-          navigation.dispatch(
-            CommonActions.reset({
-              index: 0,
-              routes: [{name: route.HOME_SCREEN}],
-            }),
-          );
         }
       })
       .catch(error => {
         setLoader(false);
         let err = '';
-        if (error.code === 'auth/invalid-credential') {
-          err = 'The supplied auth credential is malformed or has expired';
+        if (error.code === 'auth/email-already-in-use') {
+          err = 'That email address is already in use!';
         }
 
         if (error.code === 'auth/invalid-email') {
@@ -100,45 +79,6 @@ const Login = ({navigation}) => {
           backgroundColor: colors.red,
         });
       });
-    // navigation.navigate(route.HOME_SCREEN);
-  };
-
-  const signIn = async () => {
-    try {
-      setLoader(true);
-      await GoogleSignin.hasPlayServices();
-      const userInfo = await GoogleSignin.signIn();
-      setLoader(false);
-      if (userInfo) {
-        await createUserGoogle({
-          user: userInfo.user.name,
-          email: userInfo.user.email,
-          photo: userInfo.user.photo,
-        })
-          .then(e => {
-            dispatch(userLogin(e.data.user));
-            navigation.dispatch(
-              CommonActions.reset({
-                index: 0,
-                routes: [{name: route.HOME_SCREEN}],
-              }),
-            );
-            Snackbar.show({
-              text: 'User Successfully Login',
-              duration: Snackbar.LENGTH_SHORT,
-              backgroundColor: colors.green,
-            });
-          })
-          .catch(e => console.log('Error', e));
-      }
-    } catch (error) {
-      setLoader(false);
-      Snackbar.show({
-        text: 'Something went Wrong',
-        duration: Snackbar.LENGTH_SHORT,
-        backgroundColor: colors.red,
-      });
-    }
   };
 
   return (
@@ -148,14 +88,14 @@ const Login = ({navigation}) => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{flex: 1}}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}>
-        <ScrollView style={styles.container} contentContainerStyle={{}}>
-          <Space size={UtilityMethods.hp(10)} />
+        <ScrollView style={styles.container}>
+          <Space size={UtilityMethods.hp(8)} />
           <Image source={img.splash} style={styles.img} />
-          <Space size={UtilityMethods.hp(2)} />
           <Formik
             enableReinitialize
             innerRef={f => (formikRef.current = f)}
             initialValues={{
+              user: '',
               email: '',
               password: '',
             }}
@@ -172,21 +112,36 @@ const Login = ({navigation}) => {
               setFieldValue,
               values,
             }) => {
-              const handleEmailChange = text => {
-                setEmail(text, text.trim());
-                setFieldValue('email', text.trim());
-              };
-
               return (
                 <View style={styles.formContainer}>
                   <Input
-                    ref={emailInputRef}
+                    textContentType="username"
+                    labelStyle={styles.label}
+                    value={values.user}
+                    placeholder="Enter Username"
+                    errorStyle={styles.errorText}
+                    style={{fontFamily: fonts.regular}}
+                    onChangeText={handleChange('user')}
+                    errorMessage={
+                      touched.user && errors.user ? errors.user : undefined
+                    }
+                    leftIcon={
+                      <FontAwesome name="user" size={24} color="#6397b7" />
+                    }
+                    leftIconContainerStyle={{marginHorizontal: 8}}
+                    inputContainerStyle={styles.inputContainer}
+                    autoComplete="email"
+                    returnKeyType="next"
+                    returnKeyLabel="next"
+                  />
+                  <Space size={5} />
+                  <Input
                     textContentType="emailAddress"
-                    onChangeText={handleEmailChange}
                     value={values.email}
                     labelStyle={styles.label}
                     placeholder="Enter email"
                     errorStyle={styles.errorText}
+                    onChangeText={handleChange('email')}
                     style={{fontFamily: fonts.regular}}
                     errorMessage={
                       touched.email && errors.email ? errors.email : undefined
@@ -201,9 +156,8 @@ const Login = ({navigation}) => {
                     returnKeyLabel="next"
                     onSubmitEditing={() => passwordInputRef?.current?.focus()}
                   />
-                  <Space size={15} />
+                  <Space size={5} />
                   <Input
-                    ref={passwordInputRef}
                     textContentType="password"
                     value={values.password}
                     onChangeText={handleChange('password')}
@@ -231,9 +185,9 @@ const Login = ({navigation}) => {
                     onSubmitEditing={() => handleSubmit()}
                   />
                   <TouchableOpacity
-                    onPress={() => navigation.navigate(route.SIGN_UP_SCREEN)}>
+                    onPress={() => navigation.navigate(route.LOGIN_SCREEN)}>
                     <Text style={styles.signup}>
-                      Don't have an account? Sign-up
+                      Already have an account? Login-in
                     </Text>
                   </TouchableOpacity>
                   {/* <TouchableOpacity
@@ -242,38 +196,11 @@ const Login = ({navigation}) => {
                   </TouchableOpacity> */}
                   <Space size={15} />
                   <Button
-                    title="Sign in"
+                    title="Sign up"
                     loading={false}
                     buttonStyle={styles.loginButton}
                     onPress={handleSubmit}
                   />
-                  {/* <Button
-                    title="Google Sign in"
-                    loading={false}
-                    buttonStyle={styles.googleBtn}
-                  /> */}
-                  <Button
-                    icon={
-                      <FontAwesome
-                        name="google"
-                        style={styles.googleIcon}
-                        size={20}
-                        color="white"
-                      />
-                    }
-                    onPress={signIn}
-                    buttonStyle={styles.googleBtn}>
-                    <Text style={styles.googleTxt}>Google Sign in</Text>
-                  </Button>
-                  {/* <AppleButton
-                    buttonStyle={AppleButton.Style.WHITE}
-                    buttonType={AppleButton.Type.SIGN_IN}
-                    style={{
-                      width: 160, // You must specify a width
-                      height: 45, // You must specify a height
-                    }}
-                    onPress={() => onAppleButtonPress()}
-                  /> */}
                 </View>
               );
             }}
@@ -284,7 +211,7 @@ const Login = ({navigation}) => {
   );
 };
 
-export default Login;
+export default Signup;
 
 const styles = StyleSheet.create({
   container: {
@@ -310,15 +237,6 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     width: '100%',
     marginTop: 14,
-  },
-  googleBtn: {
-    backgroundColor: colors.white,
-    borderColor: colors.gray,
-    borderRadius: 25,
-    width: '100%',
-    marginTop: 16,
-    color: colors.black,
-    borderWidth: 1,
   },
   loginButtonText: {
     fontWeight: 'bold',
@@ -357,14 +275,5 @@ const styles = StyleSheet.create({
     fontFamily: fonts.regular,
     color: colors.gray,
     alignSelf: 'flex-start',
-  },
-  googleIcon: {
-    marginHorizontal: 8,
-    color: colors.black,
-  },
-  googleTxt: {
-    fontFamily: fonts.regular,
-    color: colors.gray,
-    fontSize: FontSize(12),
   },
 });

@@ -8,12 +8,20 @@
 import React from 'react';
 import SplashScreen from 'react-native-splash-screen';
 import {Provider} from 'react-redux';
+import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import {store} from './src/app/store';
 import RestoreUser from './src/Component/RestoreUser';
+import {firebaseAuth} from './src/utils/Firebase.config';
+
 function App() {
-  setTimeout(() => {
+  React.useEffect(() => {
     SplashScreen.hide();
-  }, 5000);
+    firebaseAuth;
+    GoogleSignin.configure({
+      webClientId:
+        '494755426897-v6krp4hfcgr5tlsk1fmteeu8t3jjten0.apps.googleusercontent.com', // client ID of type WEB for your server. Required to get the idToken on the user object, and for offline access.
+    });
+  }, []);
 
   return (
     <Provider store={store}>

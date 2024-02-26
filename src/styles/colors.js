@@ -1,4 +1,4 @@
-export default colors = {
+const colors = {
   primary: 'rgba(4, 20, 186, 90)',
   textDark: '#171717',
   textLight: '#FFFFFF',
@@ -17,4 +17,8 @@ export default colors = {
   iconColor: '#6397b7',
   mediumDarkBlue: '#152444',
   green: '#30ef33',
+  backgroundColor: '#fff',
+  grayInput: '#f5f2f2',
 };
+
+export default colors;

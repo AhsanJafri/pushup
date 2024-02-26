@@ -1,8 +1,13 @@
-export default route = {
+const route = {
+  SPLASH_SCREEN: 'splashScreen',
+  LOGIN_SCREEN: 'loginScreen',
+  FORGOT_SCREEN: 'forgotScreen',
+  SIGN_UP_SCREEN: 'signupScreen',
+  HOME_SCREEN: 'homeScreen',
   SETTING_SCREEN: 'settingScreen',
-  CHOOSE_ORG_DEPT: 'chooseOrgDept',
-  FIRMWARE_UPDATE_SCREEN: 'firmwareUpdateScreen',
-  PENDING_CARD_PAYMENTS_SCREEN: 'pendingCardPaymentsScreen',
-  SHOW_TERMINAL: 'showTerminal',
-  PAYMENT_METHOD_SCREEN: 'PaymentMethodScreen',
+  PROFILE_SCREEN: 'profileScreen',
+  SEARCHING_SCREEN: 'searchingScreen',
+  NOTIFICATION_SCREEN: 'notificationScreen',
 };
+
+export default route;

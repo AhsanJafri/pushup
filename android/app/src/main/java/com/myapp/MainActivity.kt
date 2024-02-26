@@ -1,4 +1,4 @@
-package com.myapp
+package com.pushup10
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

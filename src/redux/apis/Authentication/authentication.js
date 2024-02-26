@@ -2,25 +2,31 @@ import api from '../../../app/api';
 
 export const login = api.injectEndpoints({
   endpoints: builder => ({
-    loginForm: builder.mutation({
+    createUser: builder.mutation({
       query: body => ({
-        url: '/token',
+        url: 'auth/create-user',
         method: 'POST',
         body,
-        responseHandler: response => response.text(),
       }),
     }),
-    loginGoogle: builder.mutation({
+    createUserGoogle: builder.mutation({
       query: body => ({
-        url: '/user/auth/google/callback',
+        url: 'auth/create-user-google',
         method: 'POST',
-        body: {email: body.profileObj.email, google_id: body.googleId},
+        body,
       }),
     }),
-    register: builder.mutation({
+    getCurrentUser: builder.mutation({
       query: body => ({
-        url: '/register',
+        url: 'auth/get-user',
         method: 'POST',
+        body,
+      }),
+    }),
+    updateCurrentUser: builder.mutation({
+      query: body => ({
+        url: 'auth/update-user',
+        method: 'PATCH',
         body,
       }),
     }),
@@ -28,7 +34,8 @@ export const login = api.injectEndpoints({
 });
 
 export const {
-  useLoginFormMutation,
-  useLoginGoogleMutation,
-  useRegisterMutation,
+  useCreateUserMutation,
+  useCreateUserGoogleMutation,
+  useGetCurrentUserMutation,
+  useUpdateCurrentUserMutation,
 } = login;
