@@ -62,6 +62,7 @@ const Searching = ({navigation}) => {
           duration: Snackbar.LENGTH_SHORT,
           backgroundColor: colors.green,
         });
+        refetch();
       }
     });
   };

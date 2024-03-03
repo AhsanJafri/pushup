@@ -14,7 +14,6 @@ import {Header as HeaderRNE, Icon} from '@rneui/themed';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Octicons from 'react-native-vector-icons/Octicons';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
 import colors from '../styles/colors';
 import fonts from '../styles/fonts';
 import {FontSize} from '../utils/FontSize';
@@ -22,7 +21,7 @@ import route from '../navigation/routes';
 import {useSelector} from 'react-redux';
 
 const {width} = Dimensions.get('screen');
-const Header = ({navigation, onHeaderClick}) => {
+const Header = ({navigation, notifications, onHeaderClick}) => {
   const user = useSelector(state => state.authentication.user);
   const docsNavigate = () => {
     // Linking.openURL(`https://reactnativeelements.com/docs/${props.view}`);
@@ -45,6 +44,11 @@ const Header = ({navigation, onHeaderClick}) => {
         <View style={styles.headerRight}>
           <TouchableOpacity onPress={() => onHeaderClick('notification-list')}>
             <Ionicons name="notifications" color={colors.white} size={25} />
+            {notifications > 0 && (
+              <View style={styles.badgeContainer}>
+                <Text style={styles.badgeText}>{notifications}</Text>
+              </View>
+            )}
           </TouchableOpacity>
           <TouchableOpacity
             style={{marginLeft: 10}}
@@ -91,6 +95,21 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     color: colors.white,
     width: width / 2,
+  },
+  badgeContainer: {
+    position: 'absolute',
+    top: -4,
+    left: -8,
+    backgroundColor: 'red', // Customize the background color of the badge
+    borderRadius: 10, // Adjust the border-radius to make a circular badge
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+  },
+
+  badgeText: {
+    color: 'white',
+    fontSize: 12, // Customize the font size of the badge text
+    fontWeight: 'bold',
   },
 });
 

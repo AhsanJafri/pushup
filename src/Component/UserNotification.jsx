@@ -20,16 +20,17 @@ import {color} from '@rneui/base';
 
 const {width} = Dimensions.get('screen');
 const UserNotifcations = ({data, isFriend, onAction}) => {
-  //   console.log('Testing Ahsan', data);
   const {
     _id,
-    name,
     title,
     senderInfo,
     created,
     isActionNeeded,
     userId,
     fromUserId,
+    isChallenged,
+    isChallengeCompleted,
+    isChallengePartiallyCompleted,
   } = data;
   const {profilepic, email} = senderInfo;
   const dateObject = new Date(created);
@@ -39,8 +40,8 @@ const UserNotifcations = ({data, isFriend, onAction}) => {
     .toString()
     .padStart(2, '0')}-${dateObject.getFullYear()}`;
 
-  const handleRequest = type => {
-    onAction({notificationId: _id, type, userId, senderId: fromUserId});
+  const handleRequest = (behave, type) => {
+    onAction(behave, {notificationId: _id, type, userId, senderId: fromUserId});
   };
 
   return (
@@ -71,14 +72,30 @@ const UserNotifcations = ({data, isFriend, onAction}) => {
         <View style={styles.buttonDiv}>
           <TouchableOpacity
             style={[styles.btn, {backgroundColor: colors.green}]}
-            onPress={() => handleRequest(1)}>
+            onPress={() => handleRequest('noti', 1)}>
             <Text style={styles.subheaderText2}>Accept</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.btn, {marginLeft: 14}]}
-            onPress={() => handleRequest(0)}>
+            onPress={() => handleRequest('noti', 0)}>
             <Text style={styles.subheaderText2}>Reject</Text>
           </TouchableOpacity>
+        </View>
+      )}
+      {isChallenged && !isChallengeCompleted && (
+        <View style={styles.buttonDiv}>
+          <TouchableOpacity
+            style={[styles.btn, {backgroundColor: colors.green}]}
+            onPress={() => handleRequest('challenge', 1)}>
+            <Text style={styles.subheaderText2}>Completed</Text>
+          </TouchableOpacity>
+          {!isChallengePartiallyCompleted && (
+            <TouchableOpacity
+              style={[styles.btn, {marginLeft: 14}]}
+              onPress={() => handleRequest('challenge', 0)}>
+              <Text style={styles.subheaderText2}>Partially Completed</Text>
+            </TouchableOpacity>
+          )}
         </View>
       )}
     </View>
@@ -88,17 +105,18 @@ const UserNotifcations = ({data, isFriend, onAction}) => {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    width: '98%',
+    width: '97%',
     // flexDirection: 'row',
-    justifyContent: 'space-between',
     padding: 12,
     margin: 4,
     borderRadius: 10,
     borderColor: colors.gray,
     backgroundColor: colors.lightgray,
+    alignSelf: 'center',
   },
   imgDiv: {
     flexDirection: 'row',
+    width: '100%',
   },
   img: {height: 40, width: 35, borderRadius: 12},
   headerRight: {
@@ -116,10 +134,12 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontFamily: fonts.semiBold,
-    fontSize: FontSize(12),
+    fontSize: FontSize(11),
+    width: '95%',
   },
   textCont: {
     marginLeft: 12,
+    width: '95%',
   },
   iconsDiv: {
     flexDirection: 'row',
@@ -127,7 +147,7 @@ const styles = StyleSheet.create({
   subDiv: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '92%',
+    width: '90%',
   },
   buttonDiv: {
     width: '98%',

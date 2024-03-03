@@ -28,13 +28,15 @@ import UtilityMethods from '../../utils/UtilityMethods';
 import {Screen, Header, UserScore, UserRow} from '../../Component';
 import {RulesModal, UserModals} from '../../Component/Modals';
 import {showMessage} from '../../hooks/useSnackbar';
-
+import {requestUserPermission, getToken} from '../../hooks/utils';
 import {img} from '../../assets/img';
 import {
   useGetAllFriendListQuery,
   useGetCurrentUserPushUpQuery,
   useSendPushChallengeMutation,
   useUpdateUserPushUpMutation,
+  useUpdateUserTokenMutation,
+  useGetUsersNotificationCountQuery,
 } from '../../redux/apis';
 import Loader from '../../Component/Loader';
 import Snackbar from 'react-native-snackbar';
@@ -57,6 +59,9 @@ const Home = ({navigation}) => {
   const [sendPushUpChallenge, {isLoading: isLoadingPushUp}] =
     useSendPushChallengeMutation();
 
+  const [updateUserAppToken, {isLoading: isLoadingAppToken}] =
+    useUpdateUserTokenMutation();
+
   const {
     data: pushUp,
     isLoading: isLoadingPushUpChallenge,
@@ -65,8 +70,32 @@ const Home = ({navigation}) => {
     id: user ? user._id : null,
   });
 
+  const {data: {count = 0} = {count: 0}} = useGetUsersNotificationCountQuery(
+    {
+      id: user ? user._id : null,
+    },
+    {pollingInterval: 10000},
+  );
+
   const [updateUserPushup, {isLoading: isUpdatingUserPush}] =
     useUpdateUserPushUpMutation();
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        await requestUserPermission();
+        const token = await getToken();
+        if (token) {
+          const result = await updateUserAppToken({id: user._id, token});
+          console.log(result);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleHeaderPress = type => {
     switch (type) {
@@ -131,13 +160,19 @@ const Home = ({navigation}) => {
       refechUserPushUp();
     }, []),
   );
+
   return (
     <Screen>
       {isLoading &&
+        isLoadingAppToken &&
         isUpdatingUserPush &&
         isLoadingPushUpChallenge &&
         isLoadingPushUp && <Loader />}
-      <Header navigation={navigation} onHeaderClick={handleHeaderPress} />
+      <Header
+        navigation={navigation}
+        notifications={count}
+        onHeaderClick={handleHeaderPress}
+      />
       <View style={styles.container}>
         <Space size={UtilityMethods.hp(10)} />
         <TouchableOpacity
@@ -158,7 +193,7 @@ const Home = ({navigation}) => {
         <Space size={UtilityMethods.hp(2)} />
         <FlatList
           data={friendList ? friendList.lists : []}
-          keyExtractor={item => JSON.stringify(item)}
+          keyExtractor={(item, index) => JSON.stringify(item) + index}
           renderItem={({item, index}) => {
             return (
               <UserRow
@@ -205,6 +240,19 @@ const styles = StyleSheet.create({
     backgroundColor: colors.red,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1, // Add a border
+    borderColor: 'rgba(255, 255, 255, 1)', // Adjust border color for a 3D effect
+    ...Platform.select({
+      ios: {
+        shadowColor: 'black',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.5,
+        shadowRadius: 20,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   btnText: {
     fontFamily: fonts.bold,

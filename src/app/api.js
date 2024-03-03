@@ -1,4 +1,5 @@
 import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
+import {Platform} from 'react-native';
 import {getFromLocalStorage} from '../services/localStorage';
 import {store} from './store';
 export const MAIN_API_REDUCER_KEY = 'mainAPI';
@@ -26,7 +27,10 @@ const prepareHeaders = async headers => {
 };
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: 'http://localhost:3300/',
+  baseUrl:
+    Platform.OS === 'android'
+      ? 'http://10.0.2.2:3300/'
+      : 'http://localhost:3300/',
   prepareHeaders: prepareHeaders,
 });
 

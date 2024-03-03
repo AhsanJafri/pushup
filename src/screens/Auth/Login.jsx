@@ -68,20 +68,20 @@ const Login = ({navigation}) => {
       .then(user => {
         setLoader(false);
         if (user) {
-          getCurrentUserWithEmail({email: values.email}).then(user =>
-            dispatch(userLogin(user.data.user)),
-          );
-          Snackbar.show({
-            text: 'User Successfully Login',
-            duration: Snackbar.LENGTH_SHORT,
-            backgroundColor: colors.green,
+          getCurrentUserWithEmail({email: values.email}).then(user => {
+            dispatch(userLogin(user.data.user));
+            Snackbar.show({
+              text: 'User Successfully Login',
+              duration: Snackbar.LENGTH_SHORT,
+              backgroundColor: colors.green,
+            });
+            navigation.dispatch(
+              CommonActions.reset({
+                index: 0,
+                routes: [{name: route.HOME_SCREEN}],
+              }),
+            );
           });
-          navigation.dispatch(
-            CommonActions.reset({
-              index: 0,
-              routes: [{name: route.HOME_SCREEN}],
-            }),
-          );
         }
       })
       .catch(error => {
@@ -109,6 +109,7 @@ const Login = ({navigation}) => {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
       setLoader(false);
+      console.log('Test', userInfo);
       if (userInfo) {
         await createUserGoogle({
           user: userInfo.user.name,
@@ -116,6 +117,7 @@ const Login = ({navigation}) => {
           photo: userInfo.user.photo,
         })
           .then(e => {
+            console.log('Test', e);
             dispatch(userLogin(e.data.user));
             navigation.dispatch(
               CommonActions.reset({

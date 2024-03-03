@@ -39,13 +39,15 @@ const firebaseConfig = {
   persistence: true,
 };
 
-export const firebaseAuth = !firebase.apps.length
-  ? firebase.initializeApp({
-      apiKey: 'AIzaSyB9YhVajxVgODWQ_b967Gl6PiszOPVXq0E',
-      appId: '1:494755426897:ios:4629a8edbaeed1070cfe70',
-      databaseURL: 'https://pushups-241bb-default-rtdb.firebaseio.com/',
-      messagingSenderId: '494755426897',
-      projectId: 'pushups-241bb',
-      storageBucket: 'pushups-241bb.appspot.com',
-    })
-  : firebase.app();
+export const firebaseAuth = () => {
+  !firebase.apps.length
+    ? firebase.initializeApp({
+        apiKey: 'AIzaSyB9YhVajxVgODWQ_b967Gl6PiszOPVXq0E',
+        appId: '1:494755426897:ios:4629a8edbaeed1070cfe70',
+        databaseURL: 'https://pushups-241bb-default-rtdb.firebaseio.com/',
+        messagingSenderId: '494755426897',
+        projectId: 'pushups-241bb',
+        storageBucket: 'pushups-241bb.appspot.com',
+      })
+    : firebase.app();
+};

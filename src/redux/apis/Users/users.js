@@ -28,6 +28,13 @@ export const users = api.injectEndpoints({
       }),
       invalidatesTags: ['Pushup'],
     }),
+    updateUserToken: builder.mutation({
+      query: body => ({
+        url: 'auth/update-user-token',
+        method: 'PATCH',
+        body,
+      }),
+    }),
   }),
 });
 
@@ -36,4 +43,5 @@ export const {
   useGetAllFriendListQuery,
   useGetCurrentUserPushUpQuery,
   useUpdateUserPushUpMutation,
+  useUpdateUserTokenMutation,
 } = users;

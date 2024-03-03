@@ -39,6 +39,7 @@ import {
 import {
   useGetUsersNotificationQuery,
   useUserNotificationsMutation,
+  useUserChallengeNotificationsMutation,
 } from '../../redux/apis';
 import {img} from '../../assets/img';
 import Loader from '../../Component/Loader';
@@ -55,10 +56,20 @@ const Notifications = ({navigation}) => {
   } = useGetUsersNotificationQuery({id: user._id});
   const [userNotificationAction, {isLoading: isLoadingUserNotificationAction}] =
     useUserNotificationsMutation();
+  const [
+    userNotificationChallengeAction,
+    {isLoading: isLoadingUserChallengeNotificationAction},
+  ] = useUserChallengeNotificationsMutation();
 
-  const handleAction = async val => {
-    userNotificationAction(val).then(e => {
+  const handleAction = async (type, val) => {
+    const actionFunction =
+      type === 'noti'
+        ? userNotificationAction
+        : userNotificationChallengeAction;
+
+    actionFunction(val).then(e => {
       if (e.data && e.data.message) {
+        refetch();
         Snackbar.show({
           text: 'Successfully completed',
           duration: Snackbar.LENGTH_SHORT,
@@ -70,7 +81,10 @@ const Notifications = ({navigation}) => {
 
   return (
     <Screen>
-      {isFetching && isLoadingUserNotificationAction && isLoading && <Loader />}
+      {isFetching &&
+        isLoadingUserNotificationAction &&
+        isLoading &&
+        isLoadingUserChallengeNotificationAction && <Loader />}
       <HeaderRNE
         leftComponent={
           <View style={styles.headerLeft}>

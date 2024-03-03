@@ -8,6 +8,11 @@ export const notification = api.injectEndpoints({
       }),
       providesTags: ['Notification'],
     }),
+    getUsersNotificationCount: builder.query({
+      query: params => ({
+        url: `notifications/users-notification/${params.id}/count`,
+      }),
+    }),
     userNotifications: builder.mutation({
       query: body => ({
         url: 'notifications/users-notification',
@@ -24,6 +29,14 @@ export const notification = api.injectEndpoints({
       }),
       invalidatesTags: ['Notification'],
     }),
+    userChallengeNotifications: builder.mutation({
+      query: body => ({
+        url: 'notifications/users-notification/challenge',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Notification'],
+    }),
   }),
 });
 
@@ -31,4 +44,6 @@ export const {
   useGetUsersNotificationQuery,
   useUserNotificationsMutation,
   useSendPushChallengeMutation,
+  useGetUsersNotificationCountQuery,
+  useUserChallengeNotificationsMutation,
 } = notification;
